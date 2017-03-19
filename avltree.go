@@ -93,6 +93,64 @@ func rotateRight(node *AVLNode) *AVLNode {
 }
 
 
+func search(node *AVLNode, key int) *AVLNode {
+    if node == nil {
+        return nil
+    }
+    if key < node.key {
+        return search(node.left, key)
+    } else if key > node.key {
+        return search(node.right, key)
+    } else {
+        return node
+    }
+}
+
+
+func remove(node *AVLNode, key int) *AVLNode {
+    if node == nil {
+        return nil
+    }
+    if key < node.key {
+        node.left = remove(node.left, key)
+    } else if key > node.key {
+        node.right = remove(node.right, key)
+    } else {
+        if node.left != nil && node.right != nil {
+           // node to delete found with both children;
+           // replace values with smallest node of the right sub-tree
+           rightMinNode := findSmallest(node.right)
+           node.key = rightMinNode.key
+           node.value = rightMinNode.value
+           // delete smallest node that we replaced
+           //node.right = remove(node.right, rightMinNode.key)
+           node.right = remove(node.right, rightMinNode.key)
+        } else if node.left != nil {
+           // node only has left child
+           node = node.left
+        } else if node.right != nil {
+           // node only has right child
+           node = node.right
+        } else {
+           // node has no children
+           node = nil
+           return node
+        }
+
+    }
+    return rebalanceTree(node)
+}
+
+
+func findSmallest(node *AVLNode) *AVLNode {
+    if node.left != nil {
+        return findSmallest(node.left)
+    } else {
+        return node
+    }
+}
+
+
 func displayTreeInOrder(node *AVLNode) {
     if node.left != nil {
         displayTreeInOrder(node.left)
@@ -113,6 +171,8 @@ func main() {
         root = add(root, key, key*key)
     }
 
+    remove(root, 15)
     displayTreeInOrder(root)
+    fmt.Println("\n", search(root, 44))
 }
 
