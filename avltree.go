@@ -4,7 +4,7 @@ import (
     "fmt"
 )
 
-// AVLTree structure. Public methods are Add, Remove, Search, DisplayTreeInOrder.
+// AVLTree structure. Public methods are Add, Remove, Update, Search, DisplayTreeInOrder.
 type AVLTree struct {
     root *AVLNode
 }
@@ -17,11 +17,16 @@ func (t *AVLTree) Remove(key int) {
     t.root.remove(key)
 }
 
+func (t *AVLTree) Update(oldKey int, newKey int, newValue int) {
+    t.root.remove(oldKey)
+    t.root = t.root.add(newKey, newValue)
+}
+
 func (t *AVLTree) Search(key int) (node *AVLNode) {
     return t.root.search(key)
 }
 
-func (t *AVLTree) DisplayTreeInOrder() {
+func (t *AVLTree) DisplayInOrder() {
     t.root.displayNodesInOrder()
 }
 
@@ -103,7 +108,7 @@ func (n *AVLNode) search(key int) *AVLNode {
     }
 }
 
-// Displays nodes left-depth first
+// Displays nodes left-depth first (used for debugging)
 func (n *AVLNode) displayNodesInOrder() {
     if n.left != nil {
         n.left.displayNodesInOrder()
