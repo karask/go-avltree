@@ -4,161 +4,192 @@ import (
     "fmt"
 )
 
+// AVLTree structure. Public methods are Add, Remove, Search, DisplayTreeInOrder.
+type AVLTree struct {
+    root *AVLNode
+}
+
+func (t *AVLTree) Add(key int, value int) {
+    t.root = t.root.add(key, value)
+}
+
+func (t *AVLTree) Remove(key int) {
+    t.root.remove(key)
+}
+
+func (t *AVLTree) Search(key int) (node *AVLNode) {
+    return t.root.search(key)
+}
+
+func (t *AVLTree) DisplayTreeInOrder() {
+    t.root.displayNodesInOrder()
+}
+
+
+
+// AVLNode structure
 type AVLNode struct {
     key int
-    value int
+    Value int
+
     // height counts nodes (not edges)
     height int
     left *AVLNode
     right *AVLNode
 }
 
+// Adds a new node
+func (n *AVLNode) add(key int, value int) *AVLNode {
+    if n == nil {
+        return &AVLNode{key, value, 1, nil, nil}
+    }
+
+    if key < n.key {
+        n.left = n.left.add(key, value)
+    } else if key > n.key {
+        n.right = n.right.add(key, value)
+    } else {
+        // if same key exists update value
+        n.Value = value
+    }
+    return n.rebalanceTree()
+}
+
+// Removes a node
+func (n *AVLNode) remove(key int) *AVLNode {
+    if n == nil {
+        return nil
+    }
+    if key < n.key {
+        n.left = n.left.remove(key)
+    } else if key > n.key {
+        n.right = n.right.remove(key)
+    } else {
+        if n.left != nil && n.right != nil {
+           // node to delete found with both children;
+           // replace values with smallest node of the right sub-tree
+           rightMinNode := n.right.findSmallest()
+           n.key = rightMinNode.key
+           n.Value = rightMinNode.Value
+           // delete smallest node that we replaced
+           n.right = n.right.remove(rightMinNode.key)
+        } else if n.left != nil {
+           // node only has left child
+           n = n.left
+        } else if n.right != nil {
+           // node only has right child
+           n = n.right
+        } else {
+           // node has no children
+           n = nil
+           return n
+        }
+
+    }
+    return n.rebalanceTree()
+}
+
+// Searches for a node
+func (n *AVLNode) search(key int) *AVLNode {
+    if n == nil {
+        return nil
+    }
+    if key < n.key {
+        return n.left.search(key)
+    } else if key > n.key {
+        return n.right.search(key)
+    } else {
+        return n
+    }
+}
+
+// Displays nodes left-depth first
+func (n *AVLNode) displayNodesInOrder() {
+    if n.left != nil {
+        n.left.displayNodesInOrder()
+    }
+    fmt.Print(n.key, " ")
+    if n.right != nil {
+        n.right.displayNodesInOrder()
+    }
+}
+
+
+func (n *AVLNode) getHeight() int {
+    if n == nil {
+        return 0
+    }
+    return n.height
+}
+
+func (n *AVLNode) recalculateHeight() {
+    n.height = 1 + max(n.left.getHeight(), n.right.getHeight())
+}
+
+// Checks if node is balanced and rebalance
+func (n *AVLNode) rebalanceTree() *AVLNode {
+    if n == nil {
+        return n
+    }
+    n.recalculateHeight()
+
+    // check balance factor and rotateLeft if right-heavy and rotateRight if left-heavy
+    balanceFactor := n.left.getHeight() - n.right.getHeight()
+    if balanceFactor == -2 {
+        // check if child is left-heavy and rotateRight first
+        if n.right.left.getHeight() > n.right.right.getHeight() {
+            n.right = n.right.rotateRight()
+        }
+        return n.rotateLeft()
+    } else if balanceFactor == 2 {
+        // check if child is right-heavy and rotateLeft first
+        if n.left.right.getHeight() > n.left.left.getHeight() {
+            n.left = n.left.rotateLeft()
+        }
+        return n.rotateRight()
+    }
+    return n
+}
+
+// Rotate nodes left to balance node
+func (n *AVLNode) rotateLeft() *AVLNode {
+    newRoot := n.right
+    n.right = newRoot.left
+    newRoot.left = n
+
+    n.recalculateHeight()
+    newRoot.recalculateHeight()
+    return newRoot
+}
+
+// Rotate nodes right to balance node
+func (n *AVLNode) rotateRight() *AVLNode {
+    newRoot := n.left
+    n.left = newRoot.right
+    newRoot.right = n
+
+    n.recalculateHeight()
+    newRoot.recalculateHeight()
+    return newRoot
+}
+
+
+// Finds the smallest child (based on the key) for the current node
+func (n *AVLNode) findSmallest() *AVLNode {
+    if n.left != nil {
+        return n.left.findSmallest()
+    } else {
+        return n
+    }
+}
+
+
+// Returns max number - TODO: std lib seemed to only have a method for floats!
 func max(a int, b int) int {
     if a > b {
         return a
     }
     return b
 }
-
-func height(node *AVLNode) int {
-    if node == nil {
-        return 0
-    }
-    return node.height
-}
-
-func recalculateHeight(node *AVLNode) {
-    node.height = 1 + max(height(node.left), height(node.right))
-}
-
-func Add(node *AVLNode, key int, value int) *AVLNode {
-    if node == nil {
-        return &AVLNode{key, value, 1, nil, nil}
-    }
-
-    if key < node.key {
-        node.left = Add(node.left, key, value)
-    } else if key > node.key {
-        node.right = Add(node.right, key, value)
-    } else {
-        // if same key exists update value
-        node.value = value
-    }
-    return rebalanceTree(node)
-}
-
-
-func rebalanceTree(node *AVLNode) *AVLNode {
-    if node == nil {
-        return node
-    }
-    recalculateHeight(node)
-
-    // check balance factor and rotateLeft if right-heavy and rotateRight if left-heavy
-    balanceFactor := height(node.left) - height(node.right)
-    if balanceFactor == -2 {
-        // check if child is left-heavy and rotateRight first
-        if height(node.right.left) > height(node.right.right) {
-            node.right = rotateRight(node.right)
-        }
-        return rotateLeft(node)
-    } else if balanceFactor == 2 {
-        // check if child is right-heavy and rotateLeft first
-        if height(node.left.right) > height(node.left.left) {
-            node.left = rotateLeft(node.left)
-        }
-        return rotateRight(node)
-    }
-    return node
-}
-
-func rotateLeft(node *AVLNode) *AVLNode {
-    newRoot := node.right
-    node.right = newRoot.left
-    newRoot.left = node
-
-    recalculateHeight(node)
-    recalculateHeight(newRoot)
-    return newRoot
-}
-
-func rotateRight(node *AVLNode) *AVLNode {
-    newRoot := node.left
-    node.left = newRoot.right
-    newRoot.right = node
-
-    recalculateHeight(node)
-    recalculateHeight(newRoot)
-    return newRoot
-}
-
-
-func Search(node *AVLNode, key int) *AVLNode {
-    if node == nil {
-        return nil
-    }
-    if key < node.key {
-        return Search(node.left, key)
-    } else if key > node.key {
-        return Search(node.right, key)
-    } else {
-        return node
-    }
-}
-
-
-func Remove(node *AVLNode, key int) *AVLNode {
-    if node == nil {
-        return nil
-    }
-    if key < node.key {
-        node.left = Remove(node.left, key)
-    } else if key > node.key {
-        node.right = Remove(node.right, key)
-    } else {
-        if node.left != nil && node.right != nil {
-           // node to delete found with both children;
-           // replace values with smallest node of the right sub-tree
-           rightMinNode := findSmallest(node.right)
-           node.key = rightMinNode.key
-           node.value = rightMinNode.value
-           // delete smallest node that we replaced
-           node.right = Remove(node.right, rightMinNode.key)
-        } else if node.left != nil {
-           // node only has left child
-           node = node.left
-        } else if node.right != nil {
-           // node only has right child
-           node = node.right
-        } else {
-           // node has no children
-           node = nil
-           return node
-        }
-
-    }
-    return rebalanceTree(node)
-}
-
-
-func findSmallest(node *AVLNode) *AVLNode {
-    if node.left != nil {
-        return findSmallest(node.left)
-    } else {
-        return node
-    }
-}
-
-
-func DisplayTreeInOrder(node *AVLNode) {
-    if node.left != nil {
-        DisplayTreeInOrder(node.left)
-    }
-    fmt.Print(node.key, " ")
-    if node.right != nil {
-        DisplayTreeInOrder(node.right)
-    }
-}
-
 
 
