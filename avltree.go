@@ -1,4 +1,4 @@
-package main
+package avltree
 
 import (
     "fmt"
@@ -162,17 +162,4 @@ func displayTreeInOrder(node *AVLNode) {
 }
 
 
-func main() {
-    var root *AVLNode
-    //keys := []int{3,2,4,1,5}
-    //keys := []int{1,2,3,4,5,6,7,8,9}
-    keys := []int{15,3,9,44,4,8,13}
-    for _, key := range keys {
-        root = add(root, key, key*key)
-    }
-
-    remove(root, 15)
-    displayTreeInOrder(root)
-    fmt.Println("\n", search(root, 44))
-}
 
