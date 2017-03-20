@@ -31,15 +31,15 @@ func recalculateHeight(node *AVLNode) {
     node.height = 1 + max(height(node.left), height(node.right))
 }
 
-func add(node *AVLNode, key int, value int) *AVLNode {
+func Add(node *AVLNode, key int, value int) *AVLNode {
     if node == nil {
         return &AVLNode{key, value, 1, nil, nil}
     }
 
     if key < node.key {
-        node.left = add(node.left, key, value)
+        node.left = Add(node.left, key, value)
     } else if key > node.key {
-        node.right = add(node.right, key, value)
+        node.right = Add(node.right, key, value)
     } else {
         // if same key exists update value
         node.value = value
@@ -93,28 +93,28 @@ func rotateRight(node *AVLNode) *AVLNode {
 }
 
 
-func search(node *AVLNode, key int) *AVLNode {
+func Search(node *AVLNode, key int) *AVLNode {
     if node == nil {
         return nil
     }
     if key < node.key {
-        return search(node.left, key)
+        return Search(node.left, key)
     } else if key > node.key {
-        return search(node.right, key)
+        return Search(node.right, key)
     } else {
         return node
     }
 }
 
 
-func remove(node *AVLNode, key int) *AVLNode {
+func Remove(node *AVLNode, key int) *AVLNode {
     if node == nil {
         return nil
     }
     if key < node.key {
-        node.left = remove(node.left, key)
+        node.left = Remove(node.left, key)
     } else if key > node.key {
-        node.right = remove(node.right, key)
+        node.right = Remove(node.right, key)
     } else {
         if node.left != nil && node.right != nil {
            // node to delete found with both children;
@@ -123,8 +123,7 @@ func remove(node *AVLNode, key int) *AVLNode {
            node.key = rightMinNode.key
            node.value = rightMinNode.value
            // delete smallest node that we replaced
-           //node.right = remove(node.right, rightMinNode.key)
-           node.right = remove(node.right, rightMinNode.key)
+           node.right = Remove(node.right, rightMinNode.key)
         } else if node.left != nil {
            // node only has left child
            node = node.left
@@ -151,13 +150,13 @@ func findSmallest(node *AVLNode) *AVLNode {
 }
 
 
-func displayTreeInOrder(node *AVLNode) {
+func DisplayTreeInOrder(node *AVLNode) {
     if node.left != nil {
-        displayTreeInOrder(node.left)
+        DisplayTreeInOrder(node.left)
     }
     fmt.Print(node.key, " ")
     if node.right != nil {
-        displayTreeInOrder(node.right)
+        DisplayTreeInOrder(node.right)
     }
 }
 
