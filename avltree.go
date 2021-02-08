@@ -14,11 +14,11 @@ func (t *AVLTree) Add(key int, value int) {
 }
 
 func (t *AVLTree) Remove(key int) {
-	t.root.remove(key)
+	t.root = t.root.remove(key)
 }
 
 func (t *AVLTree) Update(oldKey int, newKey int, newValue int) {
-	t.root.remove(oldKey)
+	t.root = t.root.remove(oldKey)
 	t.root = t.root.add(newKey, newValue)
 }
 
